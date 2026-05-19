@@ -6,6 +6,13 @@ const { OpenAI } = require('openai');
 const express = require('express');
 const path = require('path');
 
+// OpenAI API Key Kontrolü
+if (!process.env.OPENAI_API_KEY) {
+    console.error('\n❌ HATA: "OPENAI_API_KEY" ortam değişkeni bulunamadı!');
+    console.error('Lütfen Render/Koyeb panelinden Environment Variables (Ortam Değişkenleri) kısmına "OPENAI_API_KEY" eklediğinizden emin olun.\n');
+    process.exit(1);
+}
+
 // OpenAI Bağlantısı
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -15,6 +22,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
