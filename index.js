@@ -4,6 +4,7 @@ const qrcode = require('qrcode');
 const fs = require('fs');
 const { OpenAI } = require('openai');
 const express = require('express');
+const path = require('path');
 
 // OpenAI Bağlantısı
 const openai = new OpenAI({
@@ -104,14 +105,21 @@ client.on('message', async (msg) => {
 console.log('Bot başlatılıyor, lütfen bekleyin...');
 client.initialize();
 
-// Dummy Express Sunucusu (Bulut platformların uygulamayı açık tutması için)
+// Dummy Express Sunucusu (Bulut platformların uygulamayı açık tutması için ve QR kodu göstermek için)
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.send('WhatsApp Bot Çalışıyor!');
+    const qrPath = path.join(__dirname, 'qr.png');
+    if (fs.existsSync(qrPath)) {
+        // QR kod resmini göster
+        res.setHeader('Content-Type', 'image/png');
+        res.sendFile(qrPath);
+    } else {
+        res.send('<h1>WhatsApp Bot Çalışıyor!</h1><p>Giriş yapılmış durumda veya henüz QR kod üretilmedi. Bağlantı durumunu kontrol edin.</p>');
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Web sunucusu ${PORT} portunda başlatıldı. (Keep-alive için)`);
+    console.log(`Web sunucusu ${PORT} portunda başlatıldı. (Keep-alive ve QR görüntüleme için)`);
 });
