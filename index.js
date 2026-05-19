@@ -27,6 +27,7 @@ const client = new Client({
     },
     puppeteer: {
         headless: true,
+        dumpio: true,
         executablePath: process.platform === 'win32' ? undefined : (process.env.CHROME_PATH || '/usr/bin/chromium'),
         args: [
             '--no-sandbox',
