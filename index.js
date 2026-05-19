@@ -34,7 +34,6 @@ const client = new Client({
             '--no-zygote',
             '--disable-gpu',
             ...(process.platform !== 'win32' ? [
-                '--single-process',
                 '--disable-features=site-per-process',
                 '--disable-features=IsolateOrigins'
             ] : [])
