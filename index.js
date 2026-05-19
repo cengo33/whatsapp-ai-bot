@@ -143,12 +143,127 @@ const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
     const qrPath = path.join(__dirname, 'qr.png');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     if (fs.existsSync(qrPath)) {
-        // QR kod resmini göster
-        res.setHeader('Content-Type', 'image/png');
+        res.send(`
+            <html>
+                <head>
+                    <title>WhatsApp Bot - QR Kod</title>
+                    <meta http-equiv="refresh" content="10">
+                    <style>
+                        body {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background-color: #0b141a;
+                            color: #e9edef;
+                            margin: 0;
+                        }
+                        .container {
+                            background: #111b21;
+                            padding: 40px;
+                            border-radius: 15px;
+                            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                            text-align: center;
+                            border: 1px solid #222e35;
+                            max-width: 400px;
+                        }
+                        h2 {
+                            color: #00a884;
+                            margin-top: 0;
+                        }
+                        p {
+                            color: #8696a0;
+                            font-size: 14px;
+                            line-height: 1.5;
+                        }
+                        .qr-box {
+                            background: white;
+                            padding: 15px;
+                            border-radius: 10px;
+                            display: inline-block;
+                            margin: 20px 0;
+                        }
+                        img {
+                            width: 250px;
+                            height: 250px;
+                            display: block;
+                        }
+                        .status {
+                            font-size: 12px;
+                            color: #667781;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>WhatsApp Bot Kurulumu</h2>
+                        <p>Telefonunuzdan WhatsApp uygulamasını açıp <b>Bağlı Cihazlar > Cihaz Bağla</b> seçeneğine dokunun ve aşağıdaki QR kodu okutun.</p>
+                        <div class="qr-box">
+                            <img src="/qr.png?t=${Date.now()}" alt="QR Kod" />
+                        </div>
+                        <div class="status">Sayfa her 10 saniyede bir otomatik olarak yenilenir.</div>
+                    </div>
+                </body>
+            </html>
+        `);
+    } else {
+        res.send(`
+            <html>
+                <head>
+                    <title>WhatsApp Bot Status</title>
+                    <meta http-equiv="refresh" content="5">
+                    <style>
+                        body {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background-color: #0b141a;
+                            color: #e9edef;
+                            margin: 0;
+                        }
+                        .container {
+                            background: #111b21;
+                            padding: 40px;
+                            border-radius: 15px;
+                            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                            text-align: center;
+                            border: 1px solid #222e35;
+                        }
+                        h2 {
+                            color: #00a884;
+                        }
+                        p {
+                            color: #8696a0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>WhatsApp Bot Aktif</h2>
+                        <p>Bot başarıyla giriş yapmış durumda veya QR kod yükleniyor.</p>
+                        <p>Lütfen bekleyin...</p>
+                    </div>
+                </body>
+            </html>
+        `);
+    }
+});
+
+app.get('/qr.png', (req, res) => {
+    const qrPath = path.join(__dirname, 'qr.png');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    if (fs.existsSync(qrPath)) {
         res.sendFile(qrPath);
     } else {
-        res.send('<h1>WhatsApp Bot Çalışıyor!</h1><p>Giriş yapılmış durumda veya henüz QR kod üretilmedi. Bağlantı durumunu kontrol edin.</p>');
+        res.status(404).send('QR Kod bulunamadı.');
     }
 });
 
