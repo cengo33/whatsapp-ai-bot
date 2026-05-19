@@ -1,0 +1,8 @@
+node_modules
+.dockerignore
+Dockerfile
+.git
+.gitignore
+.env
+qr.png
+.wwebjs_cache
