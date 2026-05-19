@@ -18,6 +18,28 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
+// Clean up lock files in session directory to prevent Chromium launch issues
+const sessionPath = path.join(__dirname, '.wwebjs_auth');
+function cleanLockFiles(dir) {
+    if (fs.existsSync(dir)) {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const fullPath = path.join(dir, file);
+            if (fs.lstatSync(fullPath).isDirectory()) {
+                cleanLockFiles(fullPath);
+            } else if (file === 'SingletonLock' || file === 'lock') {
+                try {
+                    fs.unlinkSync(fullPath);
+                    console.log(`Lock dosyası silindi: ${fullPath}`);
+                } catch (e) {
+                    console.error(`Lock dosyası silinemedi: ${e.message}`);
+                }
+            }
+        }
+    }
+}
+cleanLockFiles(sessionPath);
+
 const client = new Client({
     authStrategy: new LocalAuth(),
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',

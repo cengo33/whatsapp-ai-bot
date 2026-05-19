@@ -2,4 +2,3 @@ node_modules/
 .env
 qr.png
 .wwebjs_cache/
-.wwebjs_auth/
