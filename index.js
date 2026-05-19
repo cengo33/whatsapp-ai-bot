@@ -22,7 +22,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+        executablePath: process.platform === 'win32' ? undefined : (process.env.CHROME_PATH || '/usr/bin/chromium'),
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -33,6 +33,22 @@ const client = new Client({
             '--disable-gpu'
         ]
     }
+});
+
+client.on('loading_screen', (percent, message) => {
+    console.log(`[Yükleniyor] %${percent}: ${message}`);
+});
+
+client.on('authenticated', () => {
+    console.log('[BAŞARILI] Giriş bilgileri doğrulandı!');
+});
+
+client.on('auth_failure', msg => {
+    console.error('[HATA] Giriş başarısız oldu!', msg);
+});
+
+client.on('disconnected', (reason) => {
+    console.log('[BAĞLANTI KOPTI] Bot bağlantısı kesildi. Sebep:', reason);
 });
 
 // QR kod oluşturulunca bunu qr.png olarak kaydet
@@ -88,6 +104,7 @@ client.on('message', async (msg) => {
     }
 
     try {
+        console.log(`[OpenAI] İstek gönderiliyor: "${msg.body}"`);
         // OpenAI'ye mesajı gönder ve cevap bekle
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini", // Veya "gpt-3.5-turbo"
@@ -96,16 +113,23 @@ client.on('message', async (msg) => {
         });
 
         const aiResponse = completion.choices[0].message.content;
+        console.log(`[OpenAI] Cevap alındı: "${aiResponse}"`);
         
         // Asistanın verdiği cevabı da hafızaya ekle
         chatHistories[chatId].push({ role: "assistant", content: aiResponse });
 
         // Gelen cevabı WhatsApp'a gönder
+        console.log(`[WhatsApp] Cevap gönderiliyor...`);
         await msg.reply(aiResponse);
+        console.log(`[WhatsApp] Cevap başarıyla gönderildi!`);
 
     } catch (error) {
         console.error('OpenAI API Hatası:', error.message);
-        await msg.reply('Üzgünüm, şu anda yanıt oluşturamıyorum. Lütfen daha sonra tekrar deneyin.');
+        try {
+            await msg.reply('Üzgünüm, şu anda yanıt oluşturamıyorum. Lütfen daha sonra tekrar deneyin.');
+        } catch (replyErr) {
+            console.error('WhatsApp Yanıt Gönderme Hatası:', replyErr.message);
+        }
     }
 });
 
